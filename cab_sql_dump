@@ -1,0 +1,350 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.2
+-- Dumped by pg_dump version 12.2
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: bookings; Type: TABLE; Schema: public; Owner: cab
+--
+
+CREATE TABLE public.bookings (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    user_id uuid,
+    cab_id uuid,
+    source_latitude double precision,
+    source_longitude double precision,
+    dest_latitude double precision,
+    dest_longitude double precision,
+    booking_status integer,
+    uts timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.bookings OWNER TO cab;
+
+--
+-- Name: cab_locations; Type: TABLE; Schema: public; Owner: cab
+--
+
+CREATE TABLE public.cab_locations (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    cab_id uuid,
+    latitude double precision,
+    longitude double precision,
+    status integer,
+    uts timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.cab_locations OWNER TO cab;
+
+--
+-- Name: cab_users; Type: TABLE; Schema: public; Owner: cab
+--
+
+CREATE TABLE public.cab_users (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    user_name text,
+    password text,
+    uts timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    token text DEFAULT 'token'::text
+);
+
+
+ALTER TABLE public.cab_users OWNER TO cab;
+
+--
+-- Name: event_status; Type: TABLE; Schema: public; Owner: cab
+--
+
+CREATE TABLE public.event_status (
+    id integer NOT NULL,
+    name text
+);
+
+
+ALTER TABLE public.event_status OWNER TO cab;
+
+--
+-- Name: user_locations; Type: TABLE; Schema: public; Owner: cab
+--
+
+CREATE TABLE public.user_locations (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    user_id uuid,
+    latitude double precision,
+    longitude double precision,
+    uts timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.user_locations OWNER TO cab;
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: cab
+--
+
+CREATE TABLE public.users (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    user_name text,
+    password text,
+    uts timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    token text DEFAULT 'token'::text
+);
+
+
+ALTER TABLE public.users OWNER TO cab;
+
+--
+-- Name: view_available_cabs; Type: VIEW; Schema: public; Owner: cab
+--
+
+CREATE VIEW public.view_available_cabs AS
+ SELECT c.cab_id,
+    c.latitude,
+    c.longitude,
+    c.uts
+   FROM (public.cab_locations c
+     LEFT JOIN public.cab_locations t ON (((c.uts < t.uts) AND (c.cab_id = t.cab_id))))
+  WHERE ((t.id IS NULL) AND (c.status = 3));
+
+
+ALTER TABLE public.view_available_cabs OWNER TO cab;
+
+--
+-- Data for Name: bookings; Type: TABLE DATA; Schema: public; Owner: cab
+--
+
+COPY public.bookings (id, user_id, cab_id, source_latitude, source_longitude, dest_latitude, dest_longitude, booking_status, uts) FROM stdin;
+67a774e6-5361-41eb-909b-8bda4a9d3858	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	0	0001-01-01 05:21:10
+173fb2cd-3b14-4b78-885d-eabaf72e0e28	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 14:03:32.423491
+7c3a4dfb-304f-4e09-94fe-204b205213be	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 16:09:11.759393
+6e004482-d1ac-4f08-912d-1112ca1fc6fe	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 16:11:45.908625
+d07a93d5-f7e2-46b7-8e19-8c38be90bbd2	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 16:12:08.892864
+eb88c6c2-d253-431a-80da-044e0030fa18	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 16:14:38.148471
+ab69cebd-191b-4c7b-9fa8-3222595544a0	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 16:32:46.152407
+7b36e058-065c-42b7-9223-9c0ad6b07c68	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-16 17:48:22.152578
+dcc31c19-b09f-4d13-9631-e97d82f3eb5a	46e261c7-4ddc-4284-90cb-14a052749ad9	58d0331d-89a0-4e31-a321-c24bd215fac9	18.52206	73.8608	18.698977	73.960502	10	2020-04-17 08:51:53.810051
+c0bed1be-5f6a-4a0a-b701-20b983652ba0	46e261c7-4ddc-4284-90cb-14a052749ad9	619f5c73-5c04-4470-a648-1e3091552238	18.52206	73.8608	18.698977	73.960502	10	2020-04-17 11:34:48.248744
+a93541b8-21fd-4874-9bdf-f22229dcbdf7	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:07:53.527883
+05c48f87-c5b6-4a4f-9e67-8d9a70bb0b62	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:10:48.579114
+ff94515f-e153-49e2-b166-048c3b2490f7	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:10:54.733024
+01fbc0c2-9ad0-40f2-82fa-d24f5a39669a	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:30:26.940097
+7c82a1e7-f966-4057-9f74-548c69262407	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:33:16.427511
+13d1a0ee-10b2-4bbb-b050-aae179dae62b	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:35:43.90212
+c5032ad9-c480-4277-b015-abec0b13cad7	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:41:57.229348
+9245f6e6-6aae-46e0-915e-de8dd9c94a65	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:44:55.69998
+f1d203c5-9742-4afa-b25f-466af3eb46f9	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:48:27.977908
+b0d0629e-4087-4fbd-9a71-ea687dce808f	e12535d4-3767-49b9-889a-0675d065b3e9	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.530219	73.86125	18.690959	73.776756	10	2020-04-17 12:49:49.26461
+0f102d75-de9e-4eaf-a1f2-e3aad70344ca	46e261c7-4ddc-4284-90cb-14a052749ad9	619f5c73-5c04-4470-a648-1e3091552238	18.52206	73.8608	18.698977	73.960502	10	2020-04-17 13:08:27.618575
+\.
+
+
+--
+-- Data for Name: cab_locations; Type: TABLE DATA; Schema: public; Owner: cab
+--
+
+COPY public.cab_locations (id, cab_id, latitude, longitude, status, uts) FROM stdin;
+9d541258-bb8a-4f8a-83fa-3fd8e8752325	e5f98054-c38f-4a59-8fde-dcc4b7b7c0b7	18.52844	73.873526	3	2020-04-16 09:03:46.90803
+5a023e56-8bbc-4a86-b7f6-89670ac77947	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.526954	73.865753	3	2020-04-16 09:04:39.509458
+b54e0090-0734-4ae8-8b87-36b3c8e81f83	2e1d0e42-b300-4279-8a7c-ce108cf1d06b	18.530019	73.861216	4	2020-04-16 09:06:22.385757
+463ff569-36f9-4986-91cc-ad3d49dfc275	ea15bad7-1d17-43e5-b20d-3e4b7f240c7e	18.534404	73.860077	3	2020-04-16 09:09:18.272788
+4c1c3b21-6fef-4b01-96ee-ebad7cd33670	619f5c73-5c04-4470-a648-1e3091552238	18.522038	73.860867	3	2020-04-16 09:09:35.833737
+01b8fe96-452d-4ad5-a0b8-b725c367dc6c	e5f98054-c38f-4a59-8fde-dcc4b7b7c0b7	18.528194	73.860839	3	2020-04-16 09:13:06.248182
+7da1708f-63f0-483b-933d-179891320e75	2e1d0e42-b300-4279-8a7c-ce108cf1d06b	18.525095	73.863118	3	2020-04-16 09:14:28.794963
+2c8c4e87-a3db-435b-beb6-59bc96e4de6f	ea15bad7-1d17-43e5-b20d-3e4b7f240c7e	18.528555	73.862933	4	2020-04-16 09:51:18.379767
+c721137d-d7fd-4f51-a282-84e584b5abb6	e5f98054-c38f-4a59-8fde-dcc4b7b7c0b7	18.523167	73.865599	4	2020-04-16 09:51:22.902798
+21f613b9-3c4e-48e6-88b6-2014dc74ab7b	e5f98054-c38f-4a59-8fde-dcc4b7b7c0b7	18.535794	73.866947	4	2020-04-16 10:11:45.686782
+57dd251e-22f1-4826-9658-6eecf2d047da	ea15bad7-1d17-43e5-b20d-3e4b7f240c7e	18.520535	73.858762	3	2020-04-16 11:09:55.255525
+2bfb65a2-dedc-4b77-b08e-aeb7fa8e533b	ea15bad7-1d17-43e5-b20d-3e4b7f240c7e	18.521277	73.870525	4	2020-04-16 11:10:20.112883
+453a1285-4014-46f0-93fd-a8a0fb350aa2	921ed0c7-3a58-4af4-90fd-e3cc2cb76099	18.53498	73.863344	3	2020-04-16 11:10:36.605087
+476db488-6435-4d4b-9f21-62b483b3cb2c	408bc0e4-ec30-40b4-b9b7-022d9b63ea67	18.529886	73.86763	3	2020-04-16 11:34:05.693786
+faec8a5b-0923-4266-bd1b-4148286f6446	58d0331d-89a0-4e31-a321-c24bd215fac9	18.537619	73.869938	3	2020-04-16 11:34:15.664162
+277265d6-d32d-4bbf-8927-2992e962fe50	2d2a7434-0fb0-4033-ad25-b53e8512f4c4	18.524196	73.859109	4	2020-04-16 11:34:29.913311
+\.
+
+
+--
+-- Data for Name: cab_users; Type: TABLE DATA; Schema: public; Owner: cab
+--
+
+COPY public.cab_users (id, user_name, password, uts, token) FROM stdin;
+e5f98054-c38f-4a59-8fde-dcc4b7b7c0b7	c_user1	cuser1password	2020-04-16 08:12:44.52099	token
+ea15bad7-1d17-43e5-b20d-3e4b7f240c7e	c_user2	cuser2password	2020-04-16 08:12:44.52099	token
+2d2a7434-0fb0-4033-ad25-b53e8512f4c4	c_user3	cuser3password	2020-04-16 08:12:44.52099	token
+408bc0e4-ec30-40b4-b9b7-022d9b63ea67	c_user4	cuser4password	2020-04-16 08:12:44.52099	token
+619f5c73-5c04-4470-a648-1e3091552238	c_user5	cuser5password	2020-04-16 08:12:44.52099	token
+58d0331d-89a0-4e31-a321-c24bd215fac9	c_user6	cuser6password	2020-04-16 08:12:44.52099	token
+921ed0c7-3a58-4af4-90fd-e3cc2cb76099	c_user7	cuser7password	2020-04-16 08:12:44.52099	token
+2e1d0e42-b300-4279-8a7c-ce108cf1d06b	c_user8	cuser8password	2020-04-16 08:12:44.52099	token
+\.
+
+
+--
+-- Data for Name: event_status; Type: TABLE DATA; Schema: public; Owner: cab
+--
+
+COPY public.event_status (id, name) FROM stdin;
+0	UNKNOWN
+1	CAB_ONLINE
+2	CAB_OFFLINE
+3	CAB_AVAILABLE
+4	CAB_ENGAGED
+10	BOOKING_DONE
+11	BOOKING_CANCELED
+12	BOOKING_PAYMENT_PENDING
+13	BOOKING_PAYMENT_PAID
+\.
+
+
+--
+-- Data for Name: user_locations; Type: TABLE DATA; Schema: public; Owner: cab
+--
+
+COPY public.user_locations (id, user_id, latitude, longitude, uts) FROM stdin;
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: cab
+--
+
+COPY public.users (id, user_name, password, uts, token) FROM stdin;
+46e261c7-4ddc-4284-90cb-14a052749ad9	user1	user1password	2020-04-16 08:10:27.65541	token
+e12535d4-3767-49b9-889a-0675d065b3e9	user2	user2password	2020-04-16 08:10:27.65541	token
+f15e79cc-5b49-4cd3-824b-581b2a200142	user3	user3password	2020-04-16 08:10:27.65541	token
+6eef0524-ed6d-4b16-8b59-fa1f49563451	user4	user4password	2020-04-16 08:10:27.65541	token
+\.
+
+
+--
+-- Name: bookings bookings_pkey; Type: CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cab_locations cab_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.cab_locations
+    ADD CONSTRAINT cab_locations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cab_users cab_users_pkey; Type: CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.cab_users
+    ADD CONSTRAINT cab_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: event_status event_status_pkey; Type: CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.event_status
+    ADD CONSTRAINT event_status_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_locations user_locations_pkey; Type: CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.user_locations
+    ADD CONSTRAINT user_locations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bookings bookings_booking_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_booking_status_fkey FOREIGN KEY (booking_status) REFERENCES public.event_status(id);
+
+
+--
+-- Name: bookings bookings_cab_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_cab_id_fkey FOREIGN KEY (cab_id) REFERENCES public.cab_users(id);
+
+
+--
+-- Name: bookings bookings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.bookings
+    ADD CONSTRAINT bookings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: cab_locations cab_locations_cab_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.cab_locations
+    ADD CONSTRAINT cab_locations_cab_id_fkey FOREIGN KEY (cab_id) REFERENCES public.cab_users(id);
+
+
+--
+-- Name: cab_locations cab_locations_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.cab_locations
+    ADD CONSTRAINT cab_locations_status_fkey FOREIGN KEY (status) REFERENCES public.event_status(id);
+
+
+--
+-- Name: user_locations user_locations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: cab
+--
+
+ALTER TABLE ONLY public.user_locations
+    ADD CONSTRAINT user_locations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
